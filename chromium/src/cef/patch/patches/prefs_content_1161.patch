@@ -1,0 +1,49 @@
+diff --git public/common/common_param_traits_macros.h public/common/common_param_traits_macros.h
+index a1917f5..765fe1c 100644
+--- public/common/common_param_traits_macros.h
++++ public/common/common_param_traits_macros.h
+@@ -195,6 +195,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
+   IPC_STRUCT_TRAITS_MEMBER(main_frame_resizes_are_orientation_changes)
+   IPC_STRUCT_TRAITS_MEMBER(initialize_at_minimum_page_scale)
+   IPC_STRUCT_TRAITS_MEMBER(smart_insert_delete_enabled)
++  IPC_STRUCT_TRAITS_MEMBER(base_background_color)
+   IPC_STRUCT_TRAITS_MEMBER(cookie_enabled)
+   IPC_STRUCT_TRAITS_MEMBER(navigate_on_drag_drop)
+   IPC_STRUCT_TRAITS_MEMBER(spatial_navigation_enabled)
+diff --git public/common/web_preferences.cc public/common/web_preferences.cc
+index 68ccbb4..8460874 100644
+--- public/common/web_preferences.cc
++++ public/common/web_preferences.cc
+@@ -172,6 +172,7 @@ WebPreferences::WebPreferences()
+       pinch_overlay_scrollbar_thickness(0),
+       use_solid_color_scrollbars(false),
+       navigate_on_drag_drop(true),
++      base_background_color(0xFFFFFFFF),  // Color::white
+       v8_cache_options(V8_CACHE_OPTIONS_DEFAULT),
+       inert_visual_viewport(false),
+       cookie_enabled(true),
+diff --git public/common/web_preferences.h public/common/web_preferences.h
+index b784443..b04d69f 100644
+--- public/common/web_preferences.h
++++ public/common/web_preferences.h
+@@ -173,6 +173,7 @@ struct CONTENT_EXPORT WebPreferences {
+   int pinch_overlay_scrollbar_thickness;
+   bool use_solid_color_scrollbars;
+   bool navigate_on_drag_drop;
++  uint32_t base_background_color;
+   V8CacheOptions v8_cache_options;
+   bool inert_visual_viewport;
+ 
+diff --git renderer/render_view_impl.cc renderer/render_view_impl.cc
+index c2c266c..0a88250 100644
+--- renderer/render_view_impl.cc
++++ renderer/render_view_impl.cc
+@@ -938,6 +938,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
+   settings->setCookieEnabled(prefs.cookie_enabled);
+   settings->setNavigateOnDragDrop(prefs.navigate_on_drag_drop);
+ 
++  web_view->setBaseBackgroundColor(prefs.base_background_color);
++
+   // By default, allow_universal_access_from_file_urls is set to false and thus
+   // we mitigate attacks from local HTML files by not granting file:// URLs
+   // universal access. Only test shell will enable this.
